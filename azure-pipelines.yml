@@ -1,0 +1,64 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+- master
+
+pool:
+  name: Default
+
+stages:
+- stage: CI
+  jobs:
+  - job: k8s_deploy
+    workspace:
+      clean: all
+    steps:
+    - task: Docker@2
+      inputs:
+        containerRegistry: 'acr-connection'
+        command: 'login'
+    
+    - task: Docker@2
+      inputs:
+        containerRegistry: 'acr-connection'
+        repository: 'dorrdorsela'
+        command: 'buildAndPush'
+        Dockerfile: '**/Dockerfile'
+        tags: '100'
+    
+- stage: CD
+  jobs:
+    - deployment: staging
+      environment: staging
+      strategy:
+        runOnce:
+          deploy:
+            steps:
+            - script: |
+                 kubectl delete secret azurecr
+                 kubectl create secret docker-registry azurecr \
+                 --docker-server=acrwnt.azurecr.io \
+                 --docker-username=171887b0-7446-436f-a6ba-2ce16417722d \
+                 --docker-password=v6H8Q~ztmTO30KUtVI1mfuZ.Iea_6H4g4neHqdfO 
+                 kubectl delete secret env
+                 kubectl create secret generic env \
+                 --from-literal=PGHOST=$(PGHOST) \
+                 --from-literal=PGUSERNAME=$(PGUSERNAME) \
+                 --from-literal=PGDATABASE=$(PGDATABASE) \
+                 --from-literal=PGPASSWORD=dorrdor55 \
+                 --from-literal=HOST_URL=$(HOST_URL) \
+                 --from-literal=COOKIE_ENCRYPT_PWD=$(COOKIE_ENCRYPT_PWD) \
+                 --from-literal=OKTA_ORG_URL=$(OKTA_ORG_URL) \
+                 --from-literal=OKTA_CLIENT_ID=$(OKTA_CLIENT_ID) \
+                 --from-literal=OKTA_CLIENT_SECRET=$(OKTA_CLIENT_SECRET)    
+              displayName: create env
+                 kubectl apply -f k8s-yaml/postgres.yaml
+                 kubectl apply -f k8s-yaml/kubeapp.yaml
+                 kubectl apply -f k8s-yaml/service.yaml
+                 kubectl apply -f k8s-yaml/ingress.yaml
+                 #kubectl apply -f k8s-yaml/secret.yaml
+
+  

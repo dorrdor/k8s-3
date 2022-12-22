@@ -1,0 +1,113 @@
+# PostgreSQL StatefulSet
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgresql-db
+spec:
+  serviceName: postgresql-db-service
+  selector:
+    matchLabels:
+      app: postgresql-db
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: postgresql-db
+    spec:
+      containers:
+        - name: postgresql-db
+          image: postgres:latest
+          volumeMounts:
+          - name: postgresql-db-disk
+            mountPath: /data
+          env:
+          - name: POSTGRES_PASSWORD
+            value: testpassword
+          - name: PGDATA
+            value: /data/pgdata
+# Volume Claim
+  volumeClaimTemplates:
+    - metadata:
+        name: postgresql-db-disk
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 5Gi
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-db
+spec:
+  selector:
+    app: postgresql-db
+    # type: LoadBalancer
+  ports:
+  - port: 5432
+    #targetPort: 80
+ 
+
+# apiVersion: apps/v1
+# kind: StatefulSet
+# metadata:
+#   name: postgresql
+# spec:
+#   selector:
+#     matchLabels:
+#       app: postgres 
+#   serviceName: "svc-postgresql"
+#   replicas: 1 
+#   template:
+#     metadata:
+#       labels:
+#         app: postgres 
+#     spec:
+#       terminationGracePeriodSeconds: 60
+#       containers:
+#         - name: postgresql-db
+#           image: postgres:latest
+#           env:
+#             - name: POSTGRES_PASSWORD
+#               valueFrom:
+#                 secretKeyRef:
+#                   name: env
+#                   key: PGPASSWORD
+#             - name: PGDATA
+#               value: /var/lib/postgresql/data/pgdata
+#           ports:
+#             - containerPort: 5432
+#               name: postgresql-port
+#           volumeMounts:
+#             - name: data
+#               mountPath: /var/lib/postgresql/data
+#           # lifecycle:
+#           #   postStart:
+#           #     exec:
+#           #       command: ["/bin/sh", "-c", "npm run initdb" ]
+#   volumeClaimTemplates:
+#     - metadata:
+#         name: data
+#       spec:
+#         accessModes: ["ReadWriteOnce"]
+#         resources:
+#           requests:
+#             storage: 1Gi
+# ---
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: svc-postgresql
+#   labels:
+#     app: postgres
+#     role: primary
+# spec:
+#   ports:
+#     - port: 5432
+#       name: postgresql-port
+#   # clusterIP: None
+#   selector:
+#     app: postgres
+#     # role: primary
+#     # statefulset.kubernetes.io/pod-name: postgresql-sfs-0
