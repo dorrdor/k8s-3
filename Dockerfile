@@ -13,5 +13,7 @@ RUN npm install &&\
     npm audit fix &&\
     npm init -y &&\
     npm run initdb
+    
+EXPOSE 3000
 
-CMD npm run dev
+CMD [ "node", "src/server.js" ]
