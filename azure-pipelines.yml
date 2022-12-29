@@ -8,6 +8,8 @@ trigger:
 
 pool:
   name: Default
+variables:
+- group: vars
 
 stages:
 - stage: CI
@@ -38,14 +40,10 @@ stages:
           deploy:
             steps:
             - script: |
-                 kubectl delete secret azurecr
-                 kubectl create secret docker-registry azurecr \
-                 --docker-server=acrwnt.azurecr.io \
-                 --docker-username=171887b0-7446-436f-a6ba-2ce16417722d \
-                 --docker-password=v6H8Q~ztmTO30KUtVI1mfuZ.Iea_6H4g4neHqdfO 
+                 kubectl delete secret azurecr2
                  kubectl delete secret env
                  kubectl create secret generic env \
-                 --from-literal=PGHOST=$(PGHOST) \
+                 --from-literal=PGHOST=$(PGHOST) \k describe 
                  --from-literal=PGUSERNAME=$(PGUSERNAME) \
                  --from-literal=PGDATABASE=$(PGDATABASE) \
                  --from-literal=PGPASSWORD=dorrdor55 \

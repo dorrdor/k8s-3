@@ -2,15 +2,11 @@ apiVersion: v1
 kind: Service
 metadata:
   name: dorrdorsela
-  namespace: wnt-ns
-  labels:
-    app: dorrdorsela
+  namespace: dor
 spec:
   type: ClusterIP
   ports:
-    - port: 80
-      targetPort: 80
-      protocol: TCP
+  - port: 80
+    targetPort: 80
   selector:
-    app: dorrdorsela  
-
+    app: dorrdorsela
